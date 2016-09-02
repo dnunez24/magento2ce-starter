@@ -1,0 +1,81 @@
+#!/bin/bash
+
+SCRIPT_DIR="$( cd $( dirname "${BASH_SOURCE[0]}" ) && pwd )"
+ENV_FILE="$SCRIPT_DIR/../.env"
+EDITION="${1-community}"
+
+# exit codes
+EX_USAGE=64
+EX_OSFILE=72
+
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo "Can't find required environment file: $ENV_FILE"
+  exit $EX_OS_FILE
+fi
+
+usage() {
+  cat <<EOF
+  Usage: `basename $SCRIPT_DIR` [EDITION]
+
+  Where edition is one of:
+
+      * community (default)
+      * enterprise
+
+EOF
+}
+
+default_install_args() {
+  source $ENV_FILE
+  ARGS=" --no-interaction"
+  ARGS+=" --admin-email=$MAGE_ADMIN_EMAIL"
+  ARGS+=" --admin-firstname=$MAGE_ADMIN_FIRSTNAME"
+  ARGS+=" --admin-lastname=$MAGE_ADMIN_LASTNAME"
+  ARGS+=" --admin-password=$MAGE_ADMIN_PASSWORD"
+  ARGS+=" --admin-use-security-key=$MAGE_ADMIN_USE_SECURITY_KEY"
+  ARGS+=" --admin-user=$MAGE_ADMIN_USERNAME"
+  ARGS+=" --base-url=$MAGE_BASE_URL"
+  ARGS+=" --currency=$MAGE_CURRENCY"
+  ARGS+=" --db-host=$MYSQL_HOST"
+  ARGS+=" --db-name=$MYSQL_DATABASE"
+  ARGS+=" --db-password=$MYSQL_PASSWORD"
+  ARGS+=" --db-user=$MYSQL_USER"
+  ARGS+=" --http-cache-hosts=$VARNISH_HOST"
+  ARGS+=" --language=$MAGE_LANGUAGE"
+  ARGS+=" --session-save=files"
+  ARGS+=" --timezone=$MAGE_TIMEZONE"
+  ARGS+=" --use-rewrites=$MAGE_USE_REWRITES"
+  ARGS+=" --use-secure=$MAGE_USE_SECURE"
+  ARGS+=" --use-secure-admin=$MAGE_USE_SECURE_ADMIN"
+  echo $ARGS
+}
+
+enterprise_install_args() {
+  source $ENV_FILE
+  ARGS=`default_install_args`
+  ARGS+=" --amqp-host=$RABBITMQ_HOST"
+  ARGS+=" --amqp-port=$RABBITMQ_PORT"
+  ARGS+=" --amqp-user=$RABBITMQ_DEFAULT_USER"
+  ARGS+=" --amqp-password=$RABBITMQ_DEFAULT_PASS"
+  ARGS+=" --amqp-virtualhost=$RABBITMQ_DEFAULT_VHOST"
+  echo $ARGS
+}
+
+install_magento() {
+  docker-compose exec app bin/magento setup:install "$@"
+}
+
+case "$EDITION" in
+  community )
+    INSTALL_ARGS=`default_install_args`
+    ;;
+  enterprise )
+    INSTALL_ARGS=`enterprise_install_args`
+    ;;
+  * )
+    usage
+    exit $EX_USAGE
+    ;;
+esac
+
+install_magento $INSTALL_ARGS
