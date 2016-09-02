@@ -39,8 +39,8 @@ docker-compose up -d
 If you didn't already use existing data in the last step...
 
 ```bash
-docker-compose run --rm -v "$PWD/bin/install-ce.sh":install.sh app install.sh
-bin/install community
+# Installs without enterprise args by default
+.bin/install
 ```
 
 ### Install Sample Data (optional)
