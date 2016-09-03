@@ -40,7 +40,7 @@ If you didn't already use existing data in the last step...
 
 ```bash
 # Installs without enterprise args by default
-.bin/install
+bin/install
 ```
 
 ### Install Sample Data (optional)
