@@ -5,24 +5,30 @@ services:
     ports:
       - "80:80"
       # - "443:443"
+    links:
+      - fpc:fpc.magento.dev
     volumes:
       - ./conf/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
       # Uncomment this and provide an SSL certificate file for SSL support
       # - ./conf/magento.pem:/etc/haproxy/certs/magento.pem
+    command: ["/usr/local/sbin/haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
     networks:
       public:
-        ipv4_address: 172.16.220.10
       front:
-        ipv4_address: 172.16.221.10
   fpc:
     image: dnunez24/varnish
+    links:
+      - http:http.magento.dev
     volumes:
       - ./conf/varnish.vcl:/etc/varnish/default.vcl
+    environment:
+      - VARNISH_STORAGE
     networks:
       front:
-        ipv4_address: 172.16.221.20
   http:
     image: nginx:1.10-alpine
+    links:
+      - app:app.magento.dev
     volumes_from:
       - app
     volumes:
@@ -30,38 +36,46 @@ services:
       - ./bin/nginx-start.sh:/start.sh
     networks:
       front:
-        ipv4_address: 172.16.221.30
     command: [/start.sh]
   app:
-    image: dnunez24/magento2-ee:latest
+    image: dnunez24/magento2-ee
+    links:
+      - cache:cache.magento.dev
+      - session:session.magento.dev
+      - db:db.magento.dev
+      - search:search.magento.dev
+      - mq:mq.magento.dev
     volumes:
-      - ee_app:/var/www/html
-      - ./conf/env.php:/var/www/html/app/etc/env.php
+      - app:/var/www/html
+      # - ./conf/env.php:/var/www/html/app/etc/env.php
       - ./conf/php.ini:/usr/local/etc/php/conf.d/magento.ini
+    user: www-data
     networks:
       front:
-        ipv4_address: 172.16.221.40
       back:
-        ipv4_address: 172.16.222.40
   cron:
-    image: dnunez24/magento2-ee:latest
+    image: dnunez24/magento2-ee
+    links:
+      - cache:cache.magento.dev
+      - session:session.magento.dev
+      - db:db.magento.dev
+      - search:search.magento.dev
+      - mq:mq.magento.dev
     volumes_from:
       - app
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./conf/crontab:/var/spool/cron/crontabs/magento
+      - ./conf/crontab:/var/spool/cron/crontabs/root
     command: [/usr/sbin/crond, -f, -L, /dev/stdout]
     networks:
       back:
-        ipv4_address: 172.16.222.50
   cache:
     image: redis:3.2-alpine
     volumes:
-      - ee_cache:/data
+      - cache:/data
       - ./conf/redis-cache.conf:/usr/local/etc/redis/redis.conf
     networks:
       back:
-        ipv4_address: 172.16.222.60
     command: [redis-server, /usr/local/etc/redis/redis.conf]
     # echo never > /sys/kernel/mm/transparent_hugepage/enabled
     # vm.overcommit_memory = 1' to /etc/sysctl.conf
@@ -70,11 +84,10 @@ services:
   session:
     image: redis:3.2-alpine
     volumes:
-      - ee_session:/data
+      - session:/data
       - ./conf/redis-session.conf:/usr/local/etc/redis/redis.conf
     networks:
       back:
-        ipv4_address: 172.16.222.70
     command: [redis-server, /usr/local/etc/redis/redis.conf]
     # echo never > /sys/kernel/mm/transparent_hugepage/enabled
     # vm.overcommit_memory = 1' to /etc/sysctl.conf
@@ -87,6 +100,8 @@ services:
     volumes:
       - ./conf/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - search:/usr/share/elasticsearch/data
+    networks:
+      back:
   mq:
     image: rabbitmq:3
     ports:
@@ -101,41 +116,28 @@ services:
       # - RABBITMQ_HIPE_COMPILE
     networks:
       back:
-        ipv4_address: 172.16.122.100
   db:
     image: percona:5.6
     ports:
-      - 3306:3306
+      - "3306:3306"
     volumes:
-      - ee_db:/var/lib/mysql
+      - db:/var/lib/mysql
       # - ./conf/data.sql.gz:/docker-entrypoint-initdb.d/
+    environment:
+      - MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE
+      - MYSQL_USER
+      - MYSQL_PASSWORD
     networks:
       back:
-        ipv4_address: 172.16.222.80
 volumes:
-  ee_app:
-  ee_db:
-  ee_cache:
-  ee_session:
+  app:
+  db:
+  cache:
+  session:
+  search:
+  mq:
 networks:
   public:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.16.220.0/24
-          gateway: 172.16.220.1
   front:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.16.221.0/24
-          gateway: 172.16.221.1
   back:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.16.222.0/24
-          gateway: 172.16.222.1
