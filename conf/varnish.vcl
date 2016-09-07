@@ -4,7 +4,7 @@ import std;
 # The minimal Varnish version is 4.0
 
 backend default {
-    .host = "172.16.221.30";
+    .host = "http.magento.dev";
     .port = "8080";
 }
 
