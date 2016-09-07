@@ -5,37 +5,43 @@ services:
     ports:
       - "80:80"
       # - "443:443"
+    links:
+      - fpc:fpc.magento.dev
     volumes:
       - ./conf/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
       # Uncomment this and provide an SSL certificate file for SSL support
       # - ./conf/magento.pem:/etc/haproxy/certs/magento.pem
     networks:
-      public:
-        ipv4_address: 172.16.220.10
-      front:
-        ipv4_address: 172.16.221.10
+      - public
+      - front
   fpc:
     image: dnunez24/varnish
+    links:
+      - http:http.magento.dev
     volumes:
       - ./conf/varnish.vcl:/etc/varnish/default.vcl
     environment:
       - VARNISH_STORAGE
     networks:
-      front:
-        ipv4_address: 172.16.221.20
+      - front
   http:
     image: nginx:1.10-alpine
+    links:
+      - app:app.magento.dev
     volumes_from:
       - app
     volumes:
       - ./conf/nginx.conf:/etc/nginx/conf.d/default.conf
       - ./bin/nginx-start.sh:/start.sh
     networks:
-      front:
-        ipv4_address: 172.16.221.30
+      - front
     command: [/start.sh]
   app:
     image: dnunez24/magento2-ce
+    links:
+      - db:db.magento.dev
+      - cache:cache.magento.dev
+      - session:session.magento.dev
     volumes:
       - app:/var/www/html
       # - ./conf/env.php:/var/www/html/app/etc/env.php
@@ -44,29 +50,29 @@ services:
       # - ./conf/auth.json:/var/www/html/var/composer_home/
     user: www-data
     networks:
-      front:
-        ipv4_address: 172.16.221.40
-      back:
-        ipv4_address: 172.16.222.40
+      - front
+      - back
   cron:
     image: dnunez24/magento2-ce
+    links:
+      - db:db.magento.dev
+      - cache:cache.magento.dev
+      - session:session.magento.dev
     volumes_from:
       - app
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./conf/crontab:/var/spool/cron/crontabs/magento
+      - ./conf/crontab:/var/spool/cron/crontabs/root
     command: [/usr/sbin/crond, -f, -L, /dev/stdout]
     networks:
-      back:
-        ipv4_address: 172.16.222.50
+      - back
   cache:
     image: redis:3.2-alpine
     volumes:
       - cache:/data
       - ./conf/redis-cache.conf:/usr/local/etc/redis/redis.conf
     networks:
-      back:
-        ipv4_address: 172.16.222.60
+      - back
     command: [redis-server, /usr/local/etc/redis/redis.conf]
     # echo never > /sys/kernel/mm/transparent_hugepage/enabled
     # vm.overcommit_memory = 1' to /etc/sysctl.conf
@@ -78,8 +84,7 @@ services:
       - session:/data
       - ./conf/redis-session.conf:/usr/local/etc/redis/redis.conf
     networks:
-      back:
-        ipv4_address: 172.16.222.70
+      - back
     command: [redis-server, /usr/local/etc/redis/redis.conf]
     # echo never > /sys/kernel/mm/transparent_hugepage/enabled
     # vm.overcommit_memory = 1' to /etc/sysctl.conf
@@ -98,43 +103,7 @@ services:
       - MYSQL_USER
       - MYSQL_PASSWORD
     networks:
-      back:
-        ipv4_address: 172.16.222.80
-  setup:
-    image: dnunez24/magento2-ce
-    volumes_from:
-      - app
-    volumes:
-      - ./bin/install-ce.sh:/var/www/html/bin/install
-    user: www-data
-    command: /bin/true
-    environment:
-      - MAGE_MODE
-      - MAGE_ADMIN_FIRSTNAME
-      - MAGE_ADMIN_LASTNAME
-      - MAGE_ADMIN_EMAIL
-      - MAGE_ADMIN_USERNAME
-      - MAGE_ADMIN_PASSWORD
-      - MAGE_CURRENCY
-      - MAGE_BACKEND_FRONTNAME
-      - MAGE_BASE_URL
-      - MAGE_BASE_URL_SECURE
-      - MAGE_LANGUAGE
-      - MAGE_TIMEZONE
-      - MAGE_USE_SECURE
-      - MAGE_USE_SECURE_ADMIN
-      - MAGE_USE_REWRITES
-      - MAGE_ADMIN_USE_SECURITY_KEY
-      - MYSQL_HOST
-      - MYSQL_DATABASE
-      - MYSQL_USER
-      - MYSQL_PASSWORD
-      - VARNISH_HOST
-    networks:
-      front:
-        ipv4_address: 172.16.221.253
-      back:
-        ipv4_address: 172.16.222.253
+      - back
 volumes:
   app:
   db:
@@ -142,23 +111,5 @@ volumes:
   session:
 networks:
   public:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.16.220.0/24
-          gateway: 172.16.220.1
   front:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.16.221.0/24
-          gateway: 172.16.221.1
   back:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.16.222.0/24
-          gateway: 172.16.222.1
