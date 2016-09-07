@@ -1,9 +1,6 @@
 # Magento Cron Schedules
 # http://devdocs.magento.com/guides/v2.0/config-guide/cli/config-cli-subcommands-cron.html
 
-PHP_BIN=$(which php)
-MAGE_ROOT=/var/www/html
-
-* * * * * $PHP_BIN $MAGE_ROOT/bin/magento cron:run | grep -v "Ran jobs by schedule" >> $MAGE_ROOT/var/log/magento.cron.log
-* * * * * $PHP_BIN $MAGE_ROOT/update/cron.php >> $MAGE_ROOT/var/log/update.cron.log
-* * * * * $PHP_BIN $MAGE_ROOT/bin/magento setup:cron:run >> $MAGE_ROOT/var/log/setup.cron.log
+* * * * * /usr/local/bin/php /var/www/html/bin/magento cron:run | grep -v "Ran jobs by schedule" 2>&1
+* * * * * /usr/local/bin/php /var/www/html/update/cron.php 2>&1
+* * * * * /usr/local/bin/php /var/www/html/bin/magento setup:cron:run 2>&1
