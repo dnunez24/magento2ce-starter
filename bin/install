@@ -62,7 +62,7 @@ enterprise_install_args() {
 }
 
 install_magento() {
-  docker-compose exec app bin/magento setup:install "$@"
+  docker-compose exec --user www-data app bin/magento setup:install "$@"
 }
 
 case "$EDITION" in
