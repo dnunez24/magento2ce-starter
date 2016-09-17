@@ -53,18 +53,6 @@ bin/magento indexer:reindex
 bin/magento cache:flush
 ```
 
-### Copy Files to Host (Optional)
-
-If you want to be able to develop against the source used in the container, you will first need to copy those files to your host machine before starting the Docker Compose environment.
-
-```bash
-# Copy files from app container to host
-docker cp app_1:/var/www/html magento
-
-# Start the services
-docker-compose up -d
-```
-
 ## Known Issues
 
 ### Can't Compile Static Assets

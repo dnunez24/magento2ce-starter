@@ -45,6 +45,7 @@ services:
     volumes:
       - app:/var/www/html
       # - ./conf/env.php:/var/www/html/app/etc/env.php
+      - ./src/app:/var/www/html/app
       - ./conf/php.ini:/usr/local/etc/php/conf.d/magento.ini
       - ./conf/Glob.php:/var/www/html/vendor/zendframework/zend-stdlib/src/Glob.php
       # Composer auth file
