@@ -65,6 +65,33 @@ docker cp app_1:/var/www/html magento
 docker-compose up -d
 ```
 
+## Known Issues
+
+### Can't Compile Static Assets
+
+#### Problem
+
+Magento throws the following error when you try to deploy static assets:
+
+```
+[Exception]                                                                                                                                    
+  Notice: Use of undefined constant GLOB_BRACE - assumed 'GLOB_BRACE' in /var/www/html/vendor/zendframework/zend-stdlib/src/Glob.php on line 64
+```
+
+This happens because of a Zend Framework dependency on `GLOB_BRACE` that doesn't work on Alpine Linux. You can see the discussion [here](https://github.com/magento/magento2/issues/2130) and [here](https://github.com/zendframework/zend-stdlib/issues/58). As of September 2016, Magento has not incorporated the upstream changes that have been made to fix this in Zend Framework so it is addressed with a workaround.
+
+#### Solution
+
+Overwrite the problematic file with a patched version until Magento incorporates the upstream Zend Framework version into the Magento Composer project dependencies that fixes this issue. The affected line in the `docker-compose.yml` templates looks like:
+
+```yaml
+...
+  app:
+    ...
+    volumes:
+      - ./conf/Glob.php:/var/www/html/vendor/zendframework/zend-stdlib/src/Glob.php
+```
+
 ## TODO
 
 * [ ] Enterprise Edition Elasticsearch
