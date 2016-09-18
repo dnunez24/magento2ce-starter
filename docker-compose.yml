@@ -5,14 +5,14 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    links:
-      - fpc:fpc.magento.dev
     volumes:
       - ./conf/nginx/http-proxy.conf:/etc/nginx/conf.d/default.conf
       # Uncomment the following lines and SSL cert & key for HTTPS
       # - ./conf/nginx/https-proxy.conf:/etc/nginx/conf.d/default.conf
       # - ./conf/magento.crt:/etc/nginx/magento.crt
       # - ./conf/magento.key:/etc/nginx/magento.key
+    links:
+      - fpc:fpc.magento.dev
     environment:
       - TZ
     networks:
@@ -20,10 +20,10 @@ services:
       front:
   fpc:
     image: dnunez24/varnish
-    links:
-      - http:http.magento.dev
     volumes:
       - ./conf/varnish.vcl:/etc/varnish/default.vcl
+    links:
+      - http:http.magento.dev
     environment:
       - TZ
       - VARNISH_STORAGE
@@ -31,13 +31,13 @@ services:
       front:
   http:
     image: nginx:1.10-alpine
+    volumes:
+      - ./conf/nginx/fastcgi-proxy.conf:/etc/nginx/conf.d/default.conf
+      - ./conf/nginx/start.sh:/start.sh
     links:
       - app:app.magento.dev
     volumes_from:
       - app
-    volumes:
-      - ./conf/nginx/fastcgi-proxy.conf:/etc/nginx/conf.d/default.conf
-      - ./conf/nginx/start.sh:/start.sh
     environment:
       - TZ
     networks:
@@ -45,10 +45,6 @@ services:
     command: [/start.sh]
   app:
     image: dnunez24/magento2-ce
-    links:
-      - db:db.magento.dev
-      - cache:cache.magento.dev
-      - session:session.magento.dev
     volumes:
       - app:/var/www/html
       - ./src/app:/var/www/html/app
@@ -56,6 +52,10 @@ services:
       - ./conf/Glob.php:/var/www/html/vendor/zendframework/zend-stdlib/src/Glob.php
       # Composer auth file
       # - ./conf/auth.json:/var/www/html/var/composer_home/
+    links:
+      - db:db.magento.dev
+      - cache:cache.magento.dev
+      - session:session.magento.dev
     user: www-data
     environment:
       - TZ
@@ -64,14 +64,14 @@ services:
       back:
   cron:
     image: dnunez24/magento2-ce
+    volumes:
+      - ./conf/crontab:/var/spool/cron/crontabs/root
     links:
       - db:db.magento.dev
       - cache:cache.magento.dev
       - session:session.magento.dev
     volumes_from:
       - app
-    volumes:
-      - ./conf/crontab:/var/spool/cron/crontabs/root
     environment:
       - TZ
     command: [/usr/sbin/crond, -f, -L, /dev/stdout]
@@ -103,7 +103,7 @@ services:
       - "3306:3306"
     volumes:
       - db:/var/lib/mysql
-      # - ./conf/data.sql.gz:/docker-entrypoint-initdb.d/
+      # - ./magento.sql.gz:/docker-entrypoint-initdb.d/
     environment:
       - TZ
       - MYSQL_ROOT_PASSWORD

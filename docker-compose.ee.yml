@@ -1,110 +1,32 @@
 version: '2'
 services:
-  lb:
-    image: nginx:1.10-alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    links:
-      - fpc:fpc.magento.dev
-    volumes:
-      - ./conf/nginx/http-proxy.conf:/etc/nginx/conf.d/default.conf
-      # Uncomment the following lines and SSL cert & key for HTTPS
-      # - ./conf/nginx/https-proxy.conf:/etc/nginx/conf.d/default.conf
-      # - ./conf/magento.crt:/etc/nginx/magento.crt
-      # - ./conf/magento.key:/etc/nginx/magento.key
-    environment:
-      - TZ
-    networks:
-      public:
-      front:
-  fpc:
-    image: dnunez24/varnish
-    links:
-      - http:http.magento.dev
-    volumes:
-      - ./conf/varnish.vcl:/etc/varnish/default.vcl
-    environment:
-      - TZ
-      - VARNISH_STORAGE
-    networks:
-      front:
-  http:
-    image: nginx:1.10-alpine
-    links:
-      - app:app.magento.dev
-    volumes_from:
-      - app
-    volumes:
-      - ./conf/nginx/fastcgi-proxy.conf:/etc/nginx/conf.d/default.conf
-      - ./conf/nginx/start.sh:/start.sh
-    environment:
-      - TZ
-    networks:
-      front:
-    command: [/start.sh]
   app:
     image: dnunez24/magento2-ee
     links:
-      - cache:cache.magento.dev
-      - session:session.magento.dev
-      - db:db.magento.dev
-      - search:search.magento.dev
+      - searchlb:search.magento.dev
       - mq:mq.magento.dev
-    volumes:
-      - app:/var/www/html
-      - ./src/app:/var/www/html/app
-      - ./conf/php.ini:/usr/local/etc/php/conf.d/magento.ini
-      - ./conf/Glob.php:/var/www/html/vendor/zendframework/zend-stdlib/src/Glob.php
-      # Composer auth file
-      # - ./conf/auth.json:/var/www/html/var/composer_home/
-    user: www-data
-    environment:
-      - TZ
-    networks:
-      front:
-      back:
   cron:
     image: dnunez24/magento2-ee
     links:
-      - cache:cache.magento.dev
-      - session:session.magento.dev
-      - db:db.magento.dev
-      - search:search.magento.dev
+      - searchlb:search.magento.dev
       - mq:mq.magento.dev
-    volumes_from:
-      - app
-    volumes:
-      - ./conf/crontab:/var/spool/cron/crontabs/root
-    command: [/usr/sbin/crond, -f, -L, /dev/stdout]
-    networks:
-      back:
-  cache:
-    image: redis:3.2-alpine
-    volumes:
-      - cache:/data
-      - ./conf/redis-cache.conf:/usr/local/etc/redis/redis.conf
-    environment:
-      - TZ
-    networks:
-      back:
-    command: [redis-server, /usr/local/etc/redis/redis.conf]
-  session:
-    image: redis:3.2-alpine
-    volumes:
-      - session:/data
-      - ./conf/redis-session.conf:/usr/local/etc/redis/redis.conf
-    environment:
-      - TZ
-    networks:
-      back:
-    command: [redis-server, /usr/local/etc/redis/redis.conf]
-  search:
-    image: elasticsearch:2
+  searchlb:
+    image: nginx:1.10-alpine
     ports:
       - "9200:9200"
+    links:
+      - search:search.magento.dev
     volumes:
-      - ./conf/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./conf/elasticsearch/proxy.conf:/etc/nginx/conf.d/default.conf
+      - ./conf/elasticsearch/htpasswd:/etc/nginx/htpasswd
+    environment:
+      - TZ
+    networks:
+      back:
+  search:
+    image: elasticsearch:2
+    volumes:
+      - ./conf/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - search:/usr/share/elasticsearch/data
     networks:
       back:
@@ -122,28 +44,6 @@ services:
       - RABBITMQ_HIPE_COMPILE
     networks:
       back:
-  db:
-    image: percona:5.6
-    ports:
-      - "3306:3306"
-    volumes:
-      - db:/var/lib/mysql
-      # - ./conf/data.sql.gz:/docker-entrypoint-initdb.d/
-    environment:
-      - MYSQL_ROOT_PASSWORD
-      - MYSQL_DATABASE
-      - MYSQL_USER
-      - MYSQL_PASSWORD
-    networks:
-      back:
 volumes:
-  app:
-  db:
-  cache:
-  session:
   search:
   mq:
-networks:
-  public:
-  front:
-  back:
