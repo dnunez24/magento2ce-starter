@@ -1,0 +1,10 @@
+scope,scope_id,path,values
+,,"system/full_page_cache/caching_application","2"
+,,"system/full_page_cache/varnish/access_list","app.magento.dev"
+,,"system/full_page_cache/varnish/backend_host","http.magento.dev"
+,,"system/full_page_cache/varnish/backend_port","8080"
+,,"catalog/search/min_query_length","3"
+,,"catalog/search/engine","elasticsearch"
+,,"catalog/search/elasticsearch_server_hostname","search.magento.dev"
+,,"catalog/search/elasticsearch_server_port","9200"
+,,"catalog/search/elasticsearch_index_prefix","magento"
