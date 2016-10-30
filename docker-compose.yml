@@ -77,6 +77,17 @@ services:
     command: [/usr/sbin/crond, -f, -L, /dev/stdout]
     networks:
       back:
+  node:
+    build:
+      context: ./docker/node
+    image: dnunez24/node:7-alpine
+    volumes:
+      - ./docker/node/package.json:/var/www/html/app/package.json
+      - ./docker/node/Gruntfile.js:/var/www/html/app/Gruntfile.js
+      - ./docker/node/grunt-config.json:/var/www/html/app/grunt-config.json
+    volumes_from:
+      - app
+    command: [npm, install]
   cache:
     image: redis:3.2-alpine
     volumes:
