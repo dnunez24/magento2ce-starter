@@ -2,6 +2,7 @@
 /.env
 /auth.json
 /conf/env.php
+/vendor
 
 ### Ignore Magento core files ###
 
