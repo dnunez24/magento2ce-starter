@@ -1,0 +1,52 @@
+{
+    "name": "dnunez/magento2ce-starter",
+    "type": "project",
+    "version": "2.1.4",
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://repo.magento.com/"
+        }
+    ],
+    "require": {
+        "magento/product-community-edition": "2.1.4",
+        "composer/composer": "@alpha"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "*",
+        "magento/marketplace-eqp": "*",
+        "magento-ecg/coding-standard": "*"
+    },
+    "authors": [
+        {
+            "name": "Dave Nuñez",
+            "email": "dnunez24@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Magento\\Setup\\": "setup/src/Magento/Setup/"
+        },
+        "psr-0": {
+            "": "app/code/"
+        },
+        "files": [
+            "app/etc/NonComposerComponentRegistration.php"
+        ],
+        "classmap": [
+            "scripts/composer/ScriptHandler.php"
+        ]
+    },
+    "minimum-stability": "stable",
+    "scripts": {
+        "post-install-cmd": [
+            "phpcs --config-set installed_paths vendor/magento/marketplace-eqp,vendor/magento-ecg/coding-standards"
+        ],
+        "post-update-cmd": [
+            "phpcs --config-set installed_paths vendor/magento/marketplace-eqp,vendor/magento-ecg/coding-standards"
+        ],
+        "post-create-project-cmd": [
+            "Dnunez24\\composer\\ScriptHandler::postCreateProject"
+        ]
+    }
+}
