@@ -60,6 +60,7 @@
         ],
         "post-create-project-cmd": [
             "cp .env.dist .env",
+            "rm docs/_config.yml",
             "Dnunez24\\composer\\ScriptHandler::postCreateProject"
         ]
     },
