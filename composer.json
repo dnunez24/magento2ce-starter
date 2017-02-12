@@ -1,7 +1,7 @@
 {
     "name": "dnunez24/magento2ce-starter",
     "type": "project",
-    "version": "2.1.4",
+    "version": "dev-master",
     "minimum-stability": "alpha",
     "prefer-stable": true,
     "repositories": {
