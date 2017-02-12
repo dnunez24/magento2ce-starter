@@ -59,7 +59,7 @@
             "cd magento && chmod a+x bin/magento"
         ],
         "post-create-project-cmd": [
-            "cp .env.dist .env",
+            "mv .env.dist .env",
             "rm docs/_config.yml",
             "Dnunez24\\composer\\ScriptHandler::postCreateProject"
         ]
