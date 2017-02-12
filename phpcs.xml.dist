@@ -3,8 +3,11 @@
     <description>Magento 2 Coding Standards</description>
     <arg value="p"/>
     <arg name="colors"/>
-    <file>.</file>
+    <ini name="memory_limit" value="128M" />
+    <file>src</file>
     <exclude-pattern>*/vendor/*</exclude-pattern>
-    <rule ref="MEQP2" />
-    <rule ref="EcgM2" />
+    <rule ref="./vendor/magento/marketplace-eqp/MEQP1" />
+    <rule ref="./vendor/magento/marketplace-eqp/MEQP2" />
+    <arg name="standard" value="MEQP2"/>
+    <arg name="extensions" value="php,phtml"/>
 </ruleset>
