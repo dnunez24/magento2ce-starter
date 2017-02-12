@@ -2,8 +2,8 @@
 
 ## Requirements
 
-* Docker (>= 1.12.x)
-* ?
+* Docker for Mac (>= 1.12.x)
+* Docker Compose
 
 ## Setup
 
@@ -11,13 +11,9 @@
 git clone https://github.com/dnunez24/magento2-docker-starter.git my-project
 cd my-project
 
-# Modify the .env.example file to provide environment variables to Docker Compose
-cp .env.example .env
-
-# Copy the Docker Compose template for the Magento Edition you're deploying
-# to simplify docker-compose commands
-cp docker-compose-ce.yml docker-compose.yml
 ```
+
+Modify the `.env` file to provide environment variables to Docker Compose
 
 ### Existing Database
 
@@ -53,35 +49,121 @@ bin/magento indexer:reindex
 bin/magento cache:flush
 ```
 
-## Known Issues
+## Develop
 
-### Can't Compile Static Assets
+Add your theme, module or language pack to `src` directory.
 
-#### Problem
-
-Magento throws the following error when you try to deploy static assets:
-
-```
-[Exception]                                                                                                                                    
-  Notice: Use of undefined constant GLOB_BRACE - assumed 'GLOB_BRACE' in /var/www/html/vendor/zendframework/zend-stdlib/src/Glob.php on line 64
+```bash
+mkdir src/module-my-feature
 ```
 
-This happens because of a Zend Framework dependency on `GLOB_BRACE` that doesn't work on Alpine Linux. You can see the discussion [here](https://github.com/magento/magento2/issues/2130) and [here](https://github.com/zendframework/zend-stdlib/issues/58). As of September 2016, Magento has not incorporated the upstream changes that have been made to fix this in Zend Framework so it is addressed with a workaround.
+Add your local module directory as a Composer repository with the `path` type.
 
-#### Solution
-
-Overwrite the problematic file with a patched version until Magento incorporates the upstream Zend Framework version into the Magento Composer project dependencies that fixes this issue. The affected line in the `docker-compose.yml` templates looks like:
-
-```yaml
-...
-  app:
-    ...
-    volumes:
-      - ./conf/Glob.php:/var/www/html/vendor/zendframework/zend-stdlib/src/Glob.php
+```bash
+composer config repositories.my-feature path ./src/module-my-feature
 ```
 
-## TODO
+Add a `composer.json` file to your module directory.
 
-* [ ] Enterprise Edition Elasticsearch
-* [ ] Enterprise Edition message queues (via RabbitMQ)
-* [ ] Full-fledged SSL configurations and docs
+```bash
+touch src/module-my-feature/composer.json
+```
+
+[Configure your component](http://devdocs.magento.com/guides/v2.1/extension-dev-guide/package/package_module.html) in the `composer.json` file you created. Its contents should look something like the following:
+
+```json
+{
+    "name": "my-vendor/module-my-feature",
+    "description": "Some new feature",
+    "type": "magento2-module",
+    "version": "dev-master",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "require": {
+        "php": "~5.5.0|~5.6.0|~7.0.0",
+        "magento/magento-composer-installer": "*",
+        "magento/framework": "100.1.*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "MyVendor\\MyFeature\\": ""
+        }
+    }
+}
+```
+
+Add your `registration.php` file for Composer autoloading.
+
+```bash
+touch src/module-my-feature/registration.php
+```
+
+Configure your module registration. It should look something like the following:
+
+```php
+<?php
+
+use \Magento\Framework\Component\ComponentRegistrar;
+
+ComponentRegistrar::register(
+    ComponentRegistrar::MODULE,
+    'MyVendor_MyModule',
+    __DIR__
+);
+
+```
+
+Require your module through Composer.
+
+```bash
+composer require my-vendor/module-my-feature:dev-master
+```
+
+The project root level `composer.json` should then look something like the following:
+
+```json
+"require": {
+    "composer/composer": "@alpha",
+    "magento/magento-composer-installer": "*",
+    "magento/product-community-edition": "2.1.4",
+    "my-vendor/module-my-feature": "dev-master"
+},
+```
+
+Enable and set up your module in Magento.
+
+```bash
+bin/magento module:enable MyVendor_MyFeature
+bin/magento setup:upgrade
+```
+
+## Linting & Testing
+
+### Linting
+
+You can manually run static analysis tools during development
+
+```bash
+phpcs
+```
+
+Or, better yet, configure your editor to support on-the-fly linting. Here are some resources for common editors:
+
+[Atom](https://atom.io/packages/linter)
+[Sublime Text](http://www.sublimelinter.com/en/latest/)
+[PHP Storm](https://www.jetbrains.com/help/phpstorm/2016.3/using-php-code-sniffer-tool.html)
+[Vim](https://github.com/bpearson/vim-phpcs)
+
+## Testing
+
+TODO
+
+## Roadmap
+
+* [ ] Add HTTPS capability and docs
+* [ ] Configure Behat bootstraps for Magento 2 testing
