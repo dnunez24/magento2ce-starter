@@ -154,10 +154,10 @@ phpcs
 
 Or, better yet, configure your editor to support on-the-fly linting. Here are some resources for common editors:
 
-[Atom](https://atom.io/packages/linter)
-[Sublime Text](http://www.sublimelinter.com/en/latest/)
-[PHP Storm](https://www.jetbrains.com/help/phpstorm/2016.3/using-php-code-sniffer-tool.html)
-[Vim](https://github.com/bpearson/vim-phpcs)
+[Atom](https://atom.io/packages/linter)  
+[Sublime Text](http://www.sublimelinter.com/en/latest/)  
+[PHP Storm](https://www.jetbrains.com/help/phpstorm/2016.3/using-php-code-sniffer-tool.html)  
+[Vim](https://github.com/bpearson/vim-phpcs)  
 
 ## Testing
 
