@@ -1,4 +1,5 @@
 .DS_Store*
 .env
-vendor/
 magento/
+node_modules/
+vendor/
