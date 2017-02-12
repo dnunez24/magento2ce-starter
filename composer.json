@@ -1,52 +1,86 @@
 {
-    "name": "dnunez/magento2ce-starter",
+    "name": "dnunez24/magento2ce-starter",
     "type": "project",
     "version": "2.1.4",
-    "repositories": [
-        {
+    "minimum-stability": "alpha",
+    "prefer-stable": true,
+    "repositories": {
+        "magento": {
             "type": "composer",
             "url": "https://repo.magento.com/"
         }
-    ],
+    },
     "require": {
-        "magento/product-community-edition": "2.1.4",
-        "composer/composer": "@alpha"
+        "composer/composer": "@alpha",
+        "magento/magento-composer-installer": "*",
+        "magento/product-community-edition": "2.1.4"
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "*",
+        "phpunit/phpunit": "4.1.0",
+        "squizlabs/php_codesniffer": "@stable",
+        "phpmd/phpmd": "@stable",
+        "friendsofphp/php-cs-fixer": "~1.2",
+        "sebastian/phpcpd": "2.0.0",
         "magento/marketplace-eqp": "*",
-        "magento-ecg/coding-standard": "*"
+        "behat/behat": "^3.3"
     },
-    "authors": [
-        {
-            "name": "Dave Nuñez",
-            "email": "dnunez24@gmail.com"
-        }
-    ],
+    "authors": [],
     "autoload": {
         "psr-4": {
-            "Magento\\Setup\\": "setup/src/Magento/Setup/"
+            "Magento\\Setup\\": "magento/setup/src/Magento/Setup/"
         },
         "psr-0": {
-            "": "app/code/"
+            "": "src"
         },
         "files": [
-            "app/etc/NonComposerComponentRegistration.php"
+            "magento/app/etc/NonComposerComponentRegistration.php"
         ],
         "classmap": [
             "scripts/composer/ScriptHandler.php"
         ]
     },
-    "minimum-stability": "stable",
+    "autoload-dev": {
+        "psr-4": {
+            "Magento\\Sniffs\\": "magento/dev/tests/static/framework/Magento/Sniffs/",
+            "Magento\\Tools\\": "magento/dev/tools/Magento/Tools/",
+            "Magento\\Tools\\Sanity\\": "magento/dev/build/publication/sanity/Magento/Tools/Sanity/",
+            "Magento\\TestFramework\\Inspection\\": "magento/dev/tests/static/framework/Magento/TestFramework/Inspection/",
+            "Magento\\TestFramework\\Utility\\": "magento/dev/tests/static/framework/Magento/TestFramework/Utility/",
+            "Dnunez24\\Behat\\": "src/features/bootstrap/"
+        }
+    },
     "scripts": {
         "post-install-cmd": [
-            "phpcs --config-set installed_paths vendor/magento/marketplace-eqp,vendor/magento-ecg/coding-standards"
+            "cd magento && ln -sf ../composer.* .",
+            "cd magento && chmod a+x bin/magento"
         ],
         "post-update-cmd": [
-            "phpcs --config-set installed_paths vendor/magento/marketplace-eqp,vendor/magento-ecg/coding-standards"
+            "cd magento && ln -sf ../composer.* .",
+            "cd magento && chmod a+x bin/magento"
         ],
         "post-create-project-cmd": [
+            "cp .env.dist .env",
             "Dnunez24\\composer\\ScriptHandler::postCreateProject"
         ]
+    },
+    "extra": {
+        "magento-root-dir": "magento",
+        "magento-deploystrategy": "copy",
+        "component_paths": {
+            "trentrichardson/jquery-timepicker-addon": "magento/lib/web/jquery/jquery-ui-timepicker-addon.js",
+            "components/jquery": [
+                "magento/lib/web/jquery.js",
+                "magento/lib/web/jquery/jquery.min.js",
+                "magento/lib/web/jquery/jquery-migrate.js"
+            ],
+            "blueimp/jquery-file-upload": "magento/lib/web/jquery/fileUploader",
+            "components/jqueryui": [
+                "magento/lib/web/jquery/jquery-ui.js"
+            ],
+            "twbs/bootstrap": [
+                "magento/lib/web/jquery/jquery.tabs.js"
+            ],
+            "tinymce/tinymce": "magento/lib/web/tiny_mce"
+        }
     }
 }
