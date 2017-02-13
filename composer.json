@@ -30,10 +30,11 @@
             "Magento\\Setup\\": "magento/setup/src/Magento/Setup/"
         },
         "psr-0": {
-            "": "src"
+            "": "magento/app/code/"
         },
         "files": [
-            "magento/app/etc/NonComposerComponentRegistration.php"
+            "magento/app/etc/NonComposerComponentRegistration.php",
+            "src/ComponentRegistration.php"
         ],
         "classmap": [
             "scripts/composer/ScriptHandler.php"
