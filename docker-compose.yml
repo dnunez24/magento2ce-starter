@@ -6,7 +6,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./docker/nginx/http-proxy.conf:/etc/nginx/conf.d/default.conf
+      - ./.docker/nginx/http-proxy.conf:/etc/nginx/conf.d/default.conf
       # Uncomment the following lines and SSL cert & key for HTTPS
       # - ./docker/conf/nginx/https-proxy.conf:/etc/nginx/conf.d/default.conf
       # - ./docker/conf/magento.crt:/etc/nginx/magento.crt
@@ -21,7 +21,7 @@ services:
   fpc:
     image: dnunez24/varnish
     volumes:
-      - ./docker/conf/varnish.vcl:/etc/varnish/default.vcl
+      - ./.docker/conf/varnish.vcl:/etc/varnish/default.vcl
     links:
       - http:http.magento.dev
     environment:
@@ -32,8 +32,8 @@ services:
   http:
     image: nginx:1.10-alpine
     volumes:
-      - ./docker/conf/nginx/fastcgi-proxy.conf:/etc/nginx/conf.d/default.conf
-      - ./docker/conf/nginx/start.sh:/start.sh
+      - ./.docker/conf/nginx/fastcgi-proxy.conf:/etc/nginx/conf.d/default.conf
+      - ./.docker/conf/nginx/start.sh:/start.sh
     links:
       - app:app.magento.dev
     volumes_from:
@@ -46,15 +46,15 @@ services:
   app:
     image: local/magento2-dev
     build:
-      context: ./docker/app
+      context: ./.docker/app
       dockerfile: Dockerfile
       args:
           COMPOSER_AUTH: $COMPOSER_AUTH
     volumes:
       - app:/var/www/html
       - ./magento:/var/www/html/magento
-      - ./vendor:/var/www/html/vendor
-      - ./docker/conf/php.ini:/usr/local/etc/php/conf.d/magento.ini
+      - ./.docker/conf/php.ini:/usr/local/etc/php/conf.d/magento.ini
+      # - ./platform/env.php:/app/app/etc/env.php
     links:
       - db:db.magento.dev
       - cache:cache.magento.dev
@@ -63,6 +63,7 @@ services:
     environment:
       - TZ
       - COMPOSER_AUTH
+      # - PLATFORM_RELATIONSHIPS
     networks:
       front:
       back:
