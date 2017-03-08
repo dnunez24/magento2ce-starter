@@ -1,13 +1,14 @@
 <?xml version="1.0"?>
 <ruleset name="M2CE">
     <description>Magento 2 Coding Standards</description>
+    <arg value="s"/>
     <arg value="p"/>
     <arg name="colors"/>
-    <ini name="memory_limit" value="128M" />
-    <file>src</file>
-    <exclude-pattern>*/vendor/*</exclude-pattern>
-    <rule ref="./vendor/magento/marketplace-eqp/MEQP1" />
-    <rule ref="./vendor/magento/marketplace-eqp/MEQP2" />
-    <arg name="standard" value="MEQP2"/>
     <arg name="extensions" value="php,phtml"/>
+    <config name="installed_paths" value="magento/vendor/magento/marketplace-eqp" />
+    <!-- <config name="m2-path" value="magento" /> -->
+    <ini name="memory_limit" value="128M" />
+    <rule ref="MEQP2" />
+    <file>./src</file>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
 </ruleset>
