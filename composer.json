@@ -1,9 +1,9 @@
 {
     "name": "dnunez24/magento2ce-starter",
     "type": "project",
-    "version": "dev-master",
     "minimum-stability": "alpha",
     "prefer-stable": true,
+    "authors": [],
     "repositories": {
         "magento": {
             "type": "composer",
@@ -24,7 +24,9 @@
         "magento/marketplace-eqp": "*",
         "behat/behat": "^3.3"
     },
-    "authors": [],
+    "config": {
+        "vendor-dir": "magento/vendor"
+    },
     "autoload": {
         "psr-4": {
             "Magento\\Setup\\": "magento/setup/src/Magento/Setup/"
